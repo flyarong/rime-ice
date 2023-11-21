@@ -6,15 +6,21 @@
 
 
 # 要比共享目录的同名文件的 config_version 大才可以生效
-config_version: '2023-04-11'
+config_version: '2023-09-25'
 
 
 # 方案列表
 schema_list:
-  - schema: rime_ice
-  - schema: double_pinyin
-  - schema: double_pinyin_flypy
-  - schema: double_pinyin_mspy
+  # 可以直接删除或注释不需要的方案，对应的 *.schema.yaml 方案文件也可以直接删除
+  # 除了 t9，它依赖于 rime_ice，用九宫格别删 rime_ice.schema.yaml
+  - schema: rime_ice               # 雾凇拼音（全拼）
+  - schema: t9                     # 雾凇拼音（九宫格）
+  - schema: double_pinyin          # 自然码双拼
+  - schema: double_pinyin_abc      # 智能 ABC 双拼
+  - schema: double_pinyin_mspy     # 微软双拼
+  - schema: double_pinyin_sogou    # 搜狗双拼
+  - schema: double_pinyin_flypy    # 小鹤双拼
+  - schema: double_pinyin_ziguang  # 紫光双拼
 
 
 # 菜单
@@ -32,10 +38,11 @@ switcher:
     - Control+grave
     # - Alt+grave
     - Control+Shift+grave
-  save_options:  # 开关记忆，从方案选单（而非快捷键）切换时会记住的选项，需要记忆的开关不能设定 reset
+  save_options:  # 开关记忆（方案中的 switches），从方案选单（而非快捷键）切换时会记住的选项，需要记忆的开关不能设定 reset
     - ascii_punct
     - traditionalization
     - emoji
+    - full_shape
   fold_options: true            # 呼出时是否折叠，多方案时建议折叠 true ，一个方案建议展开 false
   abbreviate_options: true      # 折叠时是否缩写选项
   option_list_separator: ' / '  # 折叠时的选项分隔符
@@ -49,7 +56,7 @@ switcher:
 # macOS 偏好设置的优先级更高，如果勾选【使用大写锁定键切换“ABC”输入法】则始终会切换输入法。
 #
 # 切换中英：
-# 不同的选项表示：打字打到一半时按下了 CapsLock、Shift、Control 后： 
+# 不同的选项表示：打字打到一半时按下了 CapsLock、Shift、Control 后：
 # commit_code  上屏原始的编码，然后切换到英文
 # commit_text  上屏拼出的词句，然后切换到英文
 # clear        清除未上屏内容，然后切换到英文
@@ -81,7 +88,39 @@ ascii_composer:
 #              '`'（反引号）没有改成 '·'（间隔号）。
 punctuator:
   full_shape:
-    __include: punctuation:/full_shape # 加载 Rime 自带的共享目录的 punctuation.yaml 下的 full_shape
+    ' ' : { commit: '　' }
+    ',' : { commit: ， }
+    '.' : { commit: 。 }
+    '<' : [ 《, 〈, «, ‹ ]
+    '>' : [ 》, 〉, », › ]
+    '/' : [ ／, ÷ ]
+    '?' : { commit: ？ }
+    ';' : { commit: ； }
+    ':' : { commit: ： }
+    '''' : { pair: [ '‘', '’' ] }
+    '"' : { pair: [ '“', '”' ] }
+    '\' : [ 、, ＼ ]
+    '|' : [ ·, ｜, '§', '¦' ]
+    '`' : ｀
+    '~' : ～
+    '!' : { commit: ！ }
+    '@' : [ ＠, ☯ ]
+    '#' : [ ＃, ⌘ ]
+    '%' : [ ％, '°', '℃' ]
+    '$' : [ ￥, '$', '€', '£', '¥', '¢', '¤' ]
+    '^' : { commit: …… }
+    '&' : ＆
+    '*' : [ ＊, ·, ・, ×, ※, ❂ ]
+    '(' : （
+    ')' : ）
+    '-' : －
+    '_' : ——
+    '+' : ＋
+    '=' : ＝
+    '[' : [ 「, 【, 〔, ［ ]
+    ']' : [ 」, 】, 〕, ］ ]
+    '{' : [ 『, 〖, ｛ ]
+    '}' : [ 』, 〗, ｝ ]
   half_shape:
     ',' : '，'
     '.' : '。'
@@ -121,10 +160,9 @@ punctuator:
 # 此处配置所有方案通用的；各方案中另设专有的，比如全拼的拼字用 u，双拼的拼字用 L
 recognizer:
   patterns:
-    email: "^[A-Za-z][-_.0-9A-Za-z]*@.*$"                            # 自带的，email 正则
-    # uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"                           # 自带的，大写字母开头后，可以输入[-_+.'0-9A-Za-z]这些字符
+    email: "^[A-Za-z][-_.0-9A-Za-z]*@.*$"   # 自带的，email 正则
+    # uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"  # 自带的，大写字母开头后，可以输入[-_+.'0-9A-Za-z]这些字符（和雾凇有些冲突，关闭了）
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"  # 自带的，URL 正则
-    punct: "^v([0-9]|10|[A-Za-z]+)$"  # 响应 symbols_custom.yaml 下的 punctuator/symbols，用「v」替换「/」并支持大写
     # 一些不直接上屏的配置示例：
     # url_2: "^[A-Za-z]+[.].*"     # 句号不上屏，支持 google.com abc.txt 等网址或文件名，使用句号翻页时需要注释掉
     # colon: "^[A-Za-z]+:.*"       # 冒号不上屏
@@ -133,17 +171,21 @@ recognizer:
 
 # 快捷键
 key_binder:
-  # Lua 配置: 以词定字（上屏当前词句的第一个或最后一个字）
-  select_first_character:
-  select_last_character: "grave"
+  # Lua 配置: 以词定字（上屏当前词句的第一个或最后一个字），和中括号翻页有冲突
+  select_first_character: "bracketleft"  # 左中括号 [
+  select_last_character: "bracketright"  # 右中括号 ]
 
   bindings:
-    # Tab/Shift+Tab 切换光标至下/上一个拼音
+    # Tab / Shift+Tab 切换光标至下/上一个拼音
     - { when: composing, accept: Shift+Tab, send: Shift+Left }
     - { when: composing, accept: Tab, send: Shift+Right }
-    # Tab/Shift+Tab 翻页
+    # Tab / Shift+Tab 翻页
     # - { when: has_menu, accept: Shift+Tab, send: Page_Up }
     # - { when: has_menu, accept: Tab, send: Page_Down }
+
+    # Option/Alt + ←/→ 切换光标至下/上一个拼音
+    - { when: composing, accept: Alt+Left, send: Shift+Left }
+    - { when: composing, accept: Alt+Right, send: Shift+Right }
 
     # 翻页 - =
     - { when: has_menu, accept: minus, send: Page_Up }
@@ -161,7 +203,7 @@ key_binder:
     # - { when: always, accept: Control+Shift+1, select: .next }               # 在最近的两个方案之间切换
     # - { when: always, accept: Control+Shift+2, toggle: ascii_mode }          # 切换中英
     - { when: always, accept: Control+Shift+3, toggle: ascii_punct }           # 切换中英标点
-    - { when: always, accept: "Control+Shift+4", toggle: traditionalization }  # 切换简繁
+    - { when: always, accept: Control+Shift+4, toggle: traditionalization }    # 切换简繁
     # - { when: always, accept: Control+Shift+5, toggle: full_shape }          # 切换全半角
 
     # emacs_editing:
@@ -192,6 +234,7 @@ key_binder:
 # https://github.com/LEOYoon-Tsaw/Rime_collections/blob/master/Rime_description.md
 # （没有 Command 键，不支持）
 # accept 和 send 可用字段除 A-Za-z0-9 外，还包含以下键盘上实际有的键：
+# （区分大小写）
 # BackSpace	退格
 # Tab	水平定位符
 # Linefeed	换行
